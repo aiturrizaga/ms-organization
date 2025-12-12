@@ -25,7 +25,7 @@ public class Partner {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @Column(name = "code", length = 20, nullable = false)
+    @Column(name = "code", length = 20)
     private String code;
 
     @Column(name = "name", length = 255)
