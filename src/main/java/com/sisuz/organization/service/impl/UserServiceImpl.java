@@ -9,6 +9,7 @@ import com.sisuz.organization.model.mapper.UserMapper;
 import com.sisuz.organization.model.request.UserCreateRequest;
 import com.sisuz.organization.model.request.UserUpdateRequest;
 import com.sisuz.organization.model.response.UserResponse;
+import com.sisuz.organization.model.response.UserSessionResponse;
 import com.sisuz.organization.repository.UserRepository;
 import com.sisuz.organization.service.UserService;
 import jakarta.persistence.EntityManager;
@@ -102,5 +103,37 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> NotFoundException.of("User", userId));
 
         userRepository.delete(entity);
+    }
+
+    @Override
+    public UserSessionResponse getSession(String userId) {
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        var company = user.getCompany();
+        var tenant = user.getTenant();
+
+        return UserSessionResponse.builder()
+                .tenant(
+                        UserSessionResponse.TenantDto.builder()
+                                .id(tenant.getId())
+                                .name(tenant.getName())
+                                .build()
+                )
+                .company(
+                        UserSessionResponse.CompanyDto.builder()
+                                .id(company.getId())
+                                .name(company.getLegalName())
+                                .build()
+                )
+                .user(
+                        UserSessionResponse.UserDto.builder()
+                                .id(user.getId())
+                                .email(user.getEmail())
+                                .partnerId(user.getPartner().getId())
+                                .active(user.isActive())
+                                .build()
+                )
+                .build();
     }
 }

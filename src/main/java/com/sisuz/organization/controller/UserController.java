@@ -4,6 +4,7 @@ import com.sisuz.organization.common.api.ApiResponse;
 import com.sisuz.organization.model.request.UserCreateRequest;
 import com.sisuz.organization.model.request.UserUpdateRequest;
 import com.sisuz.organization.model.response.UserResponse;
+import com.sisuz.organization.model.response.UserSessionResponse;
 import com.sisuz.organization.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,5 +79,10 @@ public class UserController {
     ) {
         userService.delete(tenantId, companyId, userId);
         return ResponseEntity.ok(ApiResponse.success("User deleted", null));
+    }
+
+    @GetMapping("/{userId}/me")
+    public ResponseEntity<ApiResponse<UserSessionResponse>> getMe(@PathVariable String userId) {
+        return ResponseEntity.ok(ApiResponse.success(userService.getSession(userId)));
     }
 }
