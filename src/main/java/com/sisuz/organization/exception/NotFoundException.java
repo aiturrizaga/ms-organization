@@ -1,7 +1,14 @@
 package com.sisuz.organization.exception;
 
-public class NotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class NotFoundException extends DomainException {
+
     public NotFoundException(String message) {
-        super(message);
+        super(404, HttpStatus.NOT_FOUND, message);
+    }
+
+    public static NotFoundException of(String entity, Object id) {
+        return new NotFoundException(entity + " not found with id: " + id);
     }
 }

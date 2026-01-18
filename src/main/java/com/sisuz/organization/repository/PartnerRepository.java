@@ -9,14 +9,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PartnerRepository extends JpaRepository<Partner, Long> {
-    Page<Partner> findByTenantId(UUID tenantId, Pageable pageable);
+    Optional<Partner> findByIdAndTenantIdAndCompanyId(Long id, UUID tenantId, UUID companyId);
 
-    Page<Partner> findByCompanyId(UUID companyId, Pageable pageable);
+    Page<Partner> findByTenantIdAndCompanyId(UUID tenantId, UUID companyId, Pageable pageable);
 
-    Optional<Partner> findByTenantIdAndCompanyIdAndDocumentTypeIdAndDocumentNumber(
-            UUID tenantId,
-            UUID companyId,
-            Integer documentTypeId,
-            String documentNumberId
+    Page<Partner> findByTenantIdAndCompanyIdAndActive(UUID tenantId, UUID companyId, Boolean active, Pageable pageable);
+
+    boolean existsByTenantIdAndCompanyIdAndDocumentTypeIdAndDocumentNumber(
+            UUID tenantId, UUID companyId, Integer documentTypeId, String documentNumber
+    );
+
+    boolean existsByTenantIdAndCompanyIdAndDocumentTypeIdAndDocumentNumberAndIdNot(
+            UUID tenantId, UUID companyId, Integer documentTypeId, String documentNumber, Long id
     );
 }

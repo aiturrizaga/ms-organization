@@ -3,18 +3,21 @@ package com.sisuz.organization.service.impl;
 import com.sisuz.organization.entity.Company;
 import com.sisuz.organization.entity.Partner;
 import com.sisuz.organization.entity.Tenant;
+import com.sisuz.organization.exception.BusinessException;
 import com.sisuz.organization.exception.NotFoundException;
 import com.sisuz.organization.model.mapper.PartnerMapper;
+import com.sisuz.organization.model.request.CreatePartnerRequest;
 import com.sisuz.organization.model.request.PartnerRequest;
+import com.sisuz.organization.model.request.UpdatePartnerRequest;
 import com.sisuz.organization.model.response.PartnerResponse;
-import com.sisuz.organization.repository.CompanyRepository;
 import com.sisuz.organization.repository.PartnerRepository;
-import com.sisuz.organization.repository.TenantRepository;
 import com.sisuz.organization.service.PartnerService;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -23,53 +26,72 @@ import java.util.UUID;
 public class PartnerServiceImpl implements PartnerService {
 
     private final PartnerRepository partnerRepository;
-    private final TenantRepository tenantRepository;
-    private final CompanyRepository companyRepository;
     private final PartnerMapper partnerMapper;
+    private final EntityManager entityManager;
 
     @Override
-    public PartnerResponse create(PartnerRequest request) {
-        Tenant tenant = tenantRepository.findById(request.tenantId())
-                .orElseThrow(() -> new NotFoundException("Tenant not found: " + request.tenantId()));
+    public PartnerResponse create(UUID tenantId, UUID companyId, CreatePartnerRequest req) {
 
-        Company company = companyRepository.findById(request.companyId())
-                .orElseThrow(() -> new NotFoundException("Company not found: " + request.companyId()));
+        if (req.documentTypeId() != null && req.documentNumber() != null) {
+            boolean exists = partnerRepository.existsByTenantIdAndCompanyIdAndDocumentTypeIdAndDocumentNumber(
+                    tenantId, companyId, req.documentTypeId(), req.documentNumber()
+            );
+            if (exists) {
+                throw new BusinessException(500, "Partner with same document already exists");
+            }
+        }
 
-        Partner partner = partnerMapper.toEntity(request, tenant, company);
-        return partnerMapper.toDto(partnerRepository.save(partner));
+        Partner entity = partnerMapper.toEntity(req);
+
+        entity.setTenant(entityManager.getReference(Tenant.class, tenantId));
+        entity.setCompany(entityManager.getReference(Company.class, companyId));
+
+        Partner saved = partnerRepository.save(entity);
+        return partnerMapper.toResponse(saved);
     }
 
     @Override
-    public Page<PartnerResponse> getByTenant(UUID tenantId, Pageable pageable) {
-        return partnerRepository.findByTenantId(tenantId, pageable)
-                .map(partnerMapper::toDto);
+    public PartnerResponse update(UUID tenantId, UUID companyId, Long partnerId, UpdatePartnerRequest req) {
+        Partner entity = partnerRepository.findByIdAndTenantIdAndCompanyId(partnerId, tenantId, companyId)
+                .orElseThrow(() -> NotFoundException.of("Partner", partnerId));
+
+        if (req.documentTypeId() != null && req.documentNumber() != null) {
+            boolean exists = partnerRepository.existsByTenantIdAndCompanyIdAndDocumentTypeIdAndDocumentNumberAndIdNot(
+                    tenantId, companyId, req.documentTypeId(), req.documentNumber(), partnerId
+            );
+            if (exists) {
+                throw new IllegalStateException("Partner with same document already exists");
+            }
+        }
+
+        partnerMapper.updateEntity(req, entity);
+
+        Partner saved = partnerRepository.save(entity);
+        return partnerMapper.toResponse(saved);
     }
 
     @Override
-    public Page<PartnerResponse> getByCompany(UUID companyId, Pageable pageable) {
-        return partnerRepository.findByCompanyId(companyId, pageable)
-                .map(partnerMapper::toDto);
+    @Transactional(readOnly = true)
+    public PartnerResponse get(UUID tenantId, UUID companyId, Long partnerId) {
+        Partner entity = partnerRepository.findByIdAndTenantIdAndCompanyId(partnerId, tenantId, companyId)
+                .orElseThrow(() -> NotFoundException.of("Partner", partnerId));
+        return partnerMapper.toResponse(entity);
     }
 
     @Override
-    public PartnerResponse getById(Long partnerId) {
-        Partner partner = partnerRepository.findById(partnerId)
-                .orElseThrow(() -> new NotFoundException("Partner not found: " + partnerId));
-        return partnerMapper.toDto(partner);
+    @Transactional(readOnly = true)
+    public Page<PartnerResponse> list(UUID tenantId, UUID companyId, Boolean isActive, Pageable pageable) {
+        Page<Partner> page = isActive != null
+                ? partnerRepository.findByTenantIdAndCompanyIdAndActive(tenantId, companyId, isActive, pageable)
+                : partnerRepository.findByTenantIdAndCompanyId(tenantId, companyId, pageable);
+
+        return page.map(partnerMapper::toResponse);
     }
 
     @Override
-    public PartnerResponse update(Long partnerId, PartnerRequest request) {
-        Partner partner = partnerRepository.findById(partnerId)
-                .orElseThrow(() -> new NotFoundException("Partner not found: " + partnerId));
-
-        Tenant tenant = tenantRepository.findById(request.tenantId())
-                .orElseThrow(() -> new NotFoundException("Tenant not found: " + request.tenantId()));
-
-        Company company = companyRepository.findById(request.companyId())
-                .orElseThrow(() -> new NotFoundException("Company not found: " + request.companyId()));
-
-        partnerMapper.updateEntity(request, partner, tenant, company);
-        return partnerMapper.toDto(partnerRepository.save(partner));
+    public void delete(UUID tenantId, UUID companyId, Long partnerId) {
+        Partner entity = partnerRepository.findByIdAndTenantIdAndCompanyId(partnerId, tenantId, companyId)
+                .orElseThrow(() -> NotFoundException.of("Partner", partnerId));
+        partnerRepository.delete(entity);
     }
 }

@@ -1,6 +1,7 @@
 package com.sisuz.organization.service;
 
-import com.sisuz.organization.model.request.PartnerRequest;
+import com.sisuz.organization.model.request.CreatePartnerRequest;
+import com.sisuz.organization.model.request.UpdatePartnerRequest;
 import com.sisuz.organization.model.response.PartnerResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,13 +9,13 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface PartnerService {
-    PartnerResponse create(PartnerRequest request);
+    PartnerResponse create(UUID tenantId, UUID companyId, CreatePartnerRequest req);
 
-    Page<PartnerResponse> getByTenant(UUID tenantId, Pageable pageable);
+    PartnerResponse update(UUID tenantId, UUID companyId, Long partnerId, UpdatePartnerRequest req);
 
-    Page<PartnerResponse> getByCompany(UUID companyId, Pageable pageable);
+    PartnerResponse get(UUID tenantId, UUID companyId, Long partnerId);
 
-    PartnerResponse getById(Long partnerId);
+    Page<PartnerResponse> list(UUID tenantId, UUID companyId, Boolean isActive, Pageable pageable);
 
-    PartnerResponse update(Long partnerId, PartnerRequest request);
+    void delete(UUID tenantId, UUID companyId, Long partnerId);
 }
