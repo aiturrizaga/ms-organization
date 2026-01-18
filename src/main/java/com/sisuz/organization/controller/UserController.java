@@ -52,7 +52,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Page<UserResponse>>> list(
             @RequestHeader(TENANT_HEADER) UUID tenantId,
             @RequestHeader(COMPANY_HEADER) UUID companyId,
-            @RequestParam(name = "isActive", required = false, defaultValue = "false") Boolean isActive,
+            @RequestParam(name = "isActive", required = false) Boolean isActive,
             @RequestParam(name = "partnerId", required = false) Long partnerId,
             Pageable pageable
     ) {

@@ -51,7 +51,7 @@ public class PartnerController {
     public ResponseEntity<ApiResponse<Page<PartnerResponse>>> list(
             @RequestHeader(TENANT_HEADER) UUID tenantId,
             @RequestHeader(COMPANY_HEADER) UUID companyId,
-            @RequestParam(name = "isActive", required = false, defaultValue = "false") Boolean isActive,
+            @RequestParam(name = "isActive", required = false) Boolean isActive,
             Pageable pageable
     ) {
         Page<PartnerResponse> data = partnerService.list(tenantId, companyId, isActive, pageable);
