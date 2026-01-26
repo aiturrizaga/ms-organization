@@ -13,4 +13,4 @@ spring:
     name: ms-organization
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
