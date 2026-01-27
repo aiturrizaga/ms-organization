@@ -1,7 +1,7 @@
 package com.sisuz.organization.feature.user;
 
 import com.sisuz.organization.common.persistence.AuditingEntity;
-import com.sisuz.organization.feature.partner.Partner;
+import com.sisuz.organization.feature.partner.entity.Partner;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

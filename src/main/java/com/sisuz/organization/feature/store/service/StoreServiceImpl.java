@@ -11,7 +11,7 @@ import com.sisuz.organization.feature.store.entity.Store;
 import com.sisuz.organization.feature.store.mapper.StoreMapper;
 import com.sisuz.organization.feature.store.repository.StoreRepository;
 import com.sisuz.organization.feature.store.repository.spec.StoreSpecification;
-import com.sisuz.organization.security.context.CompanyContext;
+import com.sisuz.organization.security.context.ContextAwareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class StoreServiceImpl implements StoreService {
+public class StoreServiceImpl extends ContextAwareService implements StoreService {
 
     private final StoreRepository storeRepository;
     private final StoreMapper storeMapper;
@@ -93,11 +93,4 @@ public class StoreServiceImpl implements StoreService {
         storeRepository.save(entity);
     }
 
-    private UUID currentCompanyId() {
-        UUID companyId = CompanyContext.getCompanyId();
-        if (companyId == null) {
-            throw new BusinessException(3100, "Company-Id header is required");
-        }
-        return companyId;
-    }
 }

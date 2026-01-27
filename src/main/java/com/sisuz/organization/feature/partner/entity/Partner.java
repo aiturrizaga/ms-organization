@@ -1,4 +1,4 @@
-package com.sisuz.organization.feature.partner;
+package com.sisuz.organization.feature.partner.entity;
 
 import com.sisuz.organization.common.persistence.AuditingEntity;
 import com.sisuz.organization.common.persistence.IdentityDocumentType;
