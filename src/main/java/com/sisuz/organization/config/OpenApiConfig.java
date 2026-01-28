@@ -1,6 +1,7 @@
 package com.sisuz.organization.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -24,33 +25,67 @@ public class OpenApiConfig {
     }
 
     @Bean
-    public OpenApiCustomizer companyHeaderForStoreEndpoints() {
+    public OpenApiCustomizer tenantAndCompanyHeadersCustomizer() {
         return openApi -> {
             if (openApi.getPaths() == null) return;
 
             openApi.getPaths().forEach((path, pathItem) -> {
-                if (!path.startsWith("/v1/stores")) return;
+
+                boolean needsTenant =
+                        path.startsWith("/v1/tenant")
+                                || path.startsWith("/v1/partner");
+
+                boolean needsCompany =
+                        path.startsWith("/v1/store")
+                                || path.startsWith("/v1/partner");
+
+                if (!needsTenant && !needsCompany) return;
 
                 pathItem.readOperations().forEach(operation -> {
-                    boolean exists = operation.getParameters() != null
-                            && operation.getParameters().stream().anyMatch(p ->
-                            "Company-Id".equalsIgnoreCase(p.getName())
-                                    && "header".equalsIgnoreCase(p.getIn())
-                    );
 
-                    if (!exists) {
-                        Parameter companyHeader = new Parameter()
-                                .in("header")
-                                .name("Company-Id")
-                                .required(true)
-                                .description("Company context id")
-                                .schema(new StringSchema().format("uuid"));
+                    if (needsTenant) {
+                        addHeaderIfMissing(
+                                operation,
+                                "Tenant-Id",
+                                "Tenant context id",
+                                true
+                        );
+                    }
 
-                        operation.addParametersItem(companyHeader);
+                    if (needsCompany) {
+                        addHeaderIfMissing(
+                                operation,
+                                "Company-Id",
+                                "Company context id",
+                                true
+                        );
                     }
                 });
             });
         };
     }
 
+    private void addHeaderIfMissing(
+            Operation operation,
+            String name,
+            String description,
+            boolean required
+    ) {
+        boolean exists = operation.getParameters() != null
+                && operation.getParameters().stream().anyMatch(p ->
+                name.equalsIgnoreCase(p.getName())
+                        && "header".equalsIgnoreCase(p.getIn())
+        );
+
+        if (!exists) {
+            Parameter header = new Parameter()
+                    .in("header")
+                    .name(name)
+                    .required(required)
+                    .description(description)
+                    .schema(new StringSchema().format("uuid"));
+
+            operation.addParametersItem(header);
+        }
+    }
 }

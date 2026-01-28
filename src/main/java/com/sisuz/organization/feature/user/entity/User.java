@@ -1,4 +1,4 @@
-package com.sisuz.organization.feature.user;
+package com.sisuz.organization.feature.user.entity;
 
 import com.sisuz.organization.common.persistence.AuditingEntity;
 import com.sisuz.organization.feature.partner.entity.Partner;
