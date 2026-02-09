@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/partner")
+@RequestMapping("/v1/partners")
 public class PartnerController {
 
     private final PartnerService service;

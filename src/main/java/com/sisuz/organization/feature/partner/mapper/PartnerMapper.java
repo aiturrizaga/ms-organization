@@ -31,7 +31,7 @@ public interface PartnerMapper {
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "tenant", ignore = true)
     @Mapping(target = "company", ignore = true)
-    @Mapping(target = "documentType", expression = "java(toDocType(req.documentTypeId()))")
+    @Mapping(target = "documentType", ignore = true)
     void updateEntity(@MappingTarget Partner entity, PartnerUpdateRequest req);
 
     default IdentityDocumentType toDocType(Integer id) {
