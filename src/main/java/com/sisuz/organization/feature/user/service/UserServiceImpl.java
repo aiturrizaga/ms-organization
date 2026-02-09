@@ -90,6 +90,38 @@ public class UserServiceImpl extends ContextAwareService implements UserService 
     }
 
     @Override
+    public UserSessionResponse getSession(String userId) {
+        List<UserCompany> userCompany = userCompanyRepository.findAllByAppUserId(UUID.fromString(userId));
+
+        var company = userCompany.getFirst().getCompany();
+        var tenant = userCompany.getFirst().getTenant();
+        var user = userCompany.getFirst().getAppUser();
+
+        return UserSessionResponse.builder()
+                .tenant(
+                        UserSessionResponse.TenantDto.builder()
+                                .id(tenant.getId())
+                                .name(tenant.getName())
+                                .build()
+                )
+                .company(
+                        UserSessionResponse.CompanyDto.builder()
+                                .id(company.getId())
+                                .name(company.getLegalName())
+                                .build()
+                )
+                .user(
+                        UserSessionResponse.UserDto.builder()
+                                .id(user.getId())
+                                .email(user.getEmail())
+                                .partnerId(user.getPartner().getId())
+                                .active(user.isActive())
+                                .build()
+                )
+                .build();
+    }
+
+    @Override
     public UserResponse update(UUID id, UserUpdateRequest request) {
         User user = userRepository.findById(id).orElseThrow(() -> NotFoundException.of("User", id));
         mapper.updateEntity(user, request);

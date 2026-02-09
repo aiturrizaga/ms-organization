@@ -1,9 +1,6 @@
 package com.sisuz.organization.feature.user.service;
 
-import com.sisuz.organization.feature.user.controller.dto.UserCreateRequest;
-import com.sisuz.organization.feature.user.controller.dto.UserFilter;
-import com.sisuz.organization.feature.user.controller.dto.UserResponse;
-import com.sisuz.organization.feature.user.controller.dto.UserUpdateRequest;
+import com.sisuz.organization.feature.user.controller.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,6 +10,8 @@ public interface UserService {
     UserResponse create(UserCreateRequest request);
 
     UserResponse getById(UUID id);
+
+    UserSessionResponse getSession(String userId);
 
     Page<UserResponse> getAll(Pageable pageable, UserFilter filter);
 
