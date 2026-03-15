@@ -2,6 +2,7 @@ package com.sisuz.organization.feature.store.service;
 
 import com.sisuz.organization.common.exception.BusinessException;
 import com.sisuz.organization.common.exception.NotFoundException;
+import com.sisuz.organization.feature.company.entity.Company;
 import com.sisuz.organization.feature.company.repository.CompanyRepository;
 import com.sisuz.organization.feature.store.controller.dto.StoreCreateRequest;
 import com.sisuz.organization.feature.store.controller.dto.StoreFilter;
@@ -32,11 +33,11 @@ public class StoreServiceImpl extends ContextAwareService implements StoreServic
 
     @Override
     public StoreResponse create(StoreCreateRequest request) {
-        if (!companyRepository.existsById(currentCompanyId())) {
-            throw new BusinessException(3101, "Company not found with id: " + currentCompanyId());
-        }
+        Company company = companyRepository.findById(currentCompanyId())
+                .orElseThrow(() -> NotFoundException.of("Company", currentCompanyId()));
 
         Store entity = storeMapper.toEntity(request);
+        entity.setCompany(company);
         entity.setActive(true);
         Store saved = storeRepository.save(entity);
         return storeMapper.toResponse(saved);

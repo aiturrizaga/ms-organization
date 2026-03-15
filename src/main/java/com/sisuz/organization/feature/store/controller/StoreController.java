@@ -43,7 +43,7 @@ public class StoreController {
         return ApiResponse.success("Store updated", storeService.update(id, request));
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @DeleteMapping("/{id}/deactivate")
     public ApiResponse<Void> deactivate(@PathVariable UUID id) {
         storeService.deactivate(id);
         return ApiResponse.success("Store deactivated", null);
